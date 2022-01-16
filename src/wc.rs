@@ -10,8 +10,7 @@ pub fn start_thread_wc(from_read: Receiver<String>, count_line: &bool) -> JoinHa
             lc += 1;
             if !countline {
                 //compter les mots
-                let v: Vec<&str> = l.rsplit(' ').collect();
-                wc += v.len();
+                wc += l.rsplit(' ').count();
             }
         }
         if countline {
