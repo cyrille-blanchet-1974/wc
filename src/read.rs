@@ -15,10 +15,19 @@ pub fn start_thread_read_file(to_compute: Sender<String>, fic: &str) -> JoinHand
             }
             Ok(f) => {
                 let buffered = BufReader::new(f);
-                for line in buffered.lines().flatten() {
-                    if to_compute.send(line).is_err() {
-                        println!("error sending to compute");
-                        return;
+                let mut num_line = 0;
+                for line in buffered.lines() {
+                    num_line += 1;
+                    match line {
+                        Ok(l) => {
+                            if to_compute.send(l).is_err() {
+                                println!("error sending to search");
+                                return;
+                            }
+                        }
+                        Err(e) => {
+                            println!("Error reading file {} line {}=> {}", &file, num_line, e);
+                        }
                     }
                 }
             }
@@ -30,10 +39,19 @@ pub fn start_thread_read_stdin(to_compute: Sender<String>) -> JoinHandle<()> {
     let stdin = io::stdin(); // We get `Stdin` here.
     spawn(move || {
         let buffered = BufReader::new(stdin);
-        for line in buffered.lines().flatten() {
-            if to_compute.send(line).is_err() {
-                println!("error sending to compute");
-                return;
+        let mut num_line = 0;
+        for line in buffered.lines() {
+            num_line += 1;
+            match line {
+                Ok(l) => {
+                    if to_compute.send(l).is_err() {
+                        println!("error sending to search");
+                        return;
+                    }
+                }
+                Err(e) => {
+                    println!("Error reading stdin line {}=> {}", num_line, e);
+                }
             }
         }
     })
